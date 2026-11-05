@@ -1,7 +1,25 @@
 'use client';
-import { type JSX } from 'react';
+import { type JSX, useMemo } from 'react';
 import { motion, Transition } from 'motion/react';
 import { cn } from '@/lib/utils';
+
+function createMotionComponent(Component: React.ElementType) {
+  return motion.create(Component as keyof JSX.IntrinsicElements);
+}
+
+const motionComponentCache = new Map<
+  React.ElementType,
+  ReturnType<typeof createMotionComponent>
+>();
+
+function getMotionComponent(Component: React.ElementType) {
+  const cached = motionComponentCache.get(Component);
+  if (cached) return cached;
+
+  const MotionComponent = createMotionComponent(Component);
+  motionComponentCache.set(Component, MotionComponent);
+  return MotionComponent;
+}
 
 export type TextShimmerWaveProps = {
   children: string;
@@ -30,11 +48,13 @@ export function TextShimmerWave({
   rotateYDistance = 10,
   transition,
 }: TextShimmerWaveProps) {
-  const MotionComponent = motion.create(
-    Component as keyof JSX.IntrinsicElements
+  const MotionComponent = useMemo(
+    () => getMotionComponent(Component),
+    [Component]
   );
 
   return (
+    // eslint-disable-next-line react-hooks/static-components -- motion components are cached by element type
     <MotionComponent
       className={cn(
         'relative inline-block [perspective:500px]',

@@ -124,7 +124,10 @@ export default function UrlList({ onUrlsChange, refreshTrigger }: UrlListProps) 
   // Refresh when refreshTrigger changes
   useEffect(() => {
     if (refreshTrigger && refreshTrigger > 0) {
-      fetchUrls();
+      const refresh = async () => {
+        await fetchUrls();
+      };
+      refresh();
     }
   }, [refreshTrigger, fetchUrls]);
 
